@@ -1,13 +1,13 @@
 {
-  "version": "1.0.1",
-  "release_url": "https://github.com/Teobokki/miyoyazu-dash/releases/tag/v1.0.1",
-  "url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-Setup-1.0.1.exe",
-  "installer_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-Setup-1.0.1.exe",
-  "full_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-1.0.1-Windows-x64.zip",
-  "portable_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-Portable.exe",
-  "sha256": "1a696b4aa461c80ec0b75ab0628f1c60e3695759dca5ddaa6a833bb40b2d4118",
-  "zip_sha256": "ee3f80e829f4374d68dd9e290007a397e39a632640135f1abaabaa3e381eff33",
-  "portable_sha256": "06ec06c12afb9ae03e26328965cc03b333c2fc31d54771344a48ba9ecaeb965f",
+  "version": "1.0.2",
+  "release_url": "https://github.com/Teobokki/miyoyazu-dash/releases/tag/v1.0.2",
+  "url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.2/MIYOYAZU-DASH-Setup-1.0.2.exe",
+  "installer_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.2/MIYOYAZU-DASH-Setup-1.0.2.exe",
+  "full_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.2/MIYOYAZU-DASH-1.0.2-Windows-x64.zip",
+  "portable_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.2/MIYOYAZU-DASH-Portable.exe",
+  "sha256": "23650bf26887238da182600259f963cc5bc76094cf9d548f6e2115dcbe99a9eb",
+  "zip_sha256": "9356170f9ca592f48b25d00d10fbd56c48bb45ff3957d4151cbdc8f3428e8a2e",
+  "portable_sha256": "5985aa7bd2860573cbda0729ab2f4ef1f641ce5b6d5375aa604c086dd1e22945",
   "released": "2026-11-05",
-  "notes": "Retro energizing menu/stage music and punchy 90s-style SFX (chiptune-adjacent, not cutesy). 60 stages, rose/gold UI, per-user installer."
+  "notes": "Automatic in-game camera: follows Miyoyazu, swings into turns, looks ahead into jumps and landings, soft pull-in when blocked. Mouse to peek, C toggles AUTO CAMERA. 60 stages, per-user installer."
 }
