@@ -1,8 +1,8 @@
-"""MIYOYAZU DASH  v1.0.1
+"""MIYOYAZU DASH  v1.0.2
 3D platformer: run, jump, collect coins, clear ~60 stages as Miyoyazu.
 ©2026 EX Inc./HYPERION DIGITAL ©2026"""
 import os, sys, json, math, random, time, threading, traceback
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 HERE = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 def A(*p):
     from panda3d.core import Filename
@@ -44,7 +44,7 @@ def _ssl_contexts():
     return [c for c in (_SSL_TS, _SSL_FB) if c is not None] or [ssl.create_default_context()]
 
 DEFAULT = dict(cleared={}, best={}, coins_bank=0, lives_bonus=0,
-               settings=dict(gfx="EX HD", vol=0.8, fullscreen=False, sens=1.0))
+               settings=dict(gfx="EX HD", vol=0.8, fullscreen=False, sens=1.0, auto_cam=True))
 def load_profile():
     p = json.loads(json.dumps(DEFAULT))
     try:
@@ -140,6 +140,7 @@ class App(ShowBase):
         for k in ("w", "a", "s", "d", "space", "escape", "shift", "lshift", "rshift",
                   "arrow_up", "arrow_down", "arrow_left", "arrow_right", "enter", "return"):
             self.accept(k, self._kd, [k]); self.accept(k + "-up", self._ku, [k])
+        self.accept("c", self.toggle_auto_cam)
         self.accept("wheel_up", self._wheel, [1]); self.accept("wheel_down", self._wheel, [-1])
         self.taskMgr.add(self._tick, "tick")
         threading.Thread(target=self.check_update, daemon=True).start()
@@ -449,6 +450,16 @@ class App(ShowBase):
         self.btn(ui, "STAGE SELECT", lambda: (self.session and self.session.destroy(), setattr(self, "session", None), self.stage_select(self.world_i)), (0, -0.2))
         self.btn(ui, "MAIN MENU", self.main_menu, (0, -0.35))
 
+    def toggle_auto_cam(self):
+        on = not bool(self.settings.get("auto_cam", True))
+        self.settings["auto_cam"] = on
+        try: self.save_profile()
+        except Exception: pass
+        s = self.session
+        if s:
+            s.auto_cam = on; s.cam_manual_t = 0.0
+            s.banner = "AUTO CAMERA  " + ("ON" if on else "OFF"); s.banner_t = 1.2
+
     def resume(self):
         self.paused = False
         self.clear_ui()
@@ -536,8 +547,13 @@ class App(ShowBase):
                 self.pressed_keys.add("space")
             if int(task.time * 3) % 7 == 0:
                 self.pressed_keys.add("shift")
+            # MD_STRAFE: hold D too so the auto camera has to swing into the turn
+            if os.environ.get("MD_STRAFE") and 2.0 < task.time < 2.0 + float(os.environ.get("MD_STRAFE")):
+                self.keys.add("d")
+            else:
+                self.keys.discard("d")
             # steer camera toward goal
-            if s.world.goal:
+            if s.world.goal and not (os.environ.get("MD_STRAFE") and task.time < 2.0 + float(os.environ.get("MD_STRAFE")) + 1.5):
                 gx, gy, gz = s.world.goal
                 want = math.degrees(math.atan2(-(gx - p.x), (gy - p.y)))
                 s.cam_yaw += _ang_wrap(want - s.cam_yaw) * 0.05

@@ -86,6 +86,14 @@ class Session:
         self.cam_pitch = -18.0
         self.cam_pos = None
         self.shake = 0.0
+        # AUTO CAMERA state
+        self.auto_cam = bool(app.settings.get("auto_cam", True))
+        self.cam_manual_t = 0.0
+        self.cam_idle_t = 0.0
+        self.cam_dist = None
+        self.cam_look = None
+        self.cam_lead = [0.0, 0.0]
+        self.cam_air_z = None
         self.time_scale = 0.55 if self.meta["wonder"] == "slow" else 1.0
         self.grav = 22.0
         if self.meta["wonder"] == "lowgrav":
@@ -140,7 +148,9 @@ class Session:
         p = self.player
         inp = self.input() if not self.app.paused else dict(w=0, s=0, a=0, d=0, jump=0, dash=0, lookx=0, looky=0)
 
-        # camera look
+        # camera look: optional manual mouse look; auto camera takes back over after a short hold
+        if abs(inp["lookx"]) > 0.8 or abs(inp["looky"]) > 0.8:
+            self.cam_manual_t = 1.4
         self.cam_yaw = _ang_wrap(self.cam_yaw - inp["lookx"] * 0.12)
         self.cam_pitch = max(-55, min(10, self.cam_pitch - inp["looky"] * 0.10))
 
@@ -348,33 +358,148 @@ class Session:
         self.banner_t = 4.0
         self.app.on_stage_clear(self.meta["id"], self.coins, self.time, self.rank)
 
+    # ---------------------------------------------------------------- AUTO CAMERA
+    def _ground_below(self, x, y, z):
+        """Highest solid top at/below z under (x, y), or None."""
+        best = None
+        for x0, y0, z0, x1, y1, z1 in self.world.boxes:
+            if x0 <= x <= x1 and y0 <= y <= y1 and z1 <= z + 0.1:
+                if best is None or z1 > best:
+                    best = z1
+        return best
+
+    def _cam_ray_hit(self, ax, ay, az, bx, by, bz):
+        """Fraction t in [0,1] along A->B where the segment first enters a solid box (slab test)."""
+        dx, dy, dz = bx - ax, by - ay, bz - az
+        tmin_all = 1.0
+        for x0, y0, z0, x1, y1, z1 in self.world.boxes:
+            t0, t1 = 0.0, 1.0
+            ok = True
+            for o, d, lo, hi in ((ax, dx, x0, x1), (ay, dy, y0, y1), (az, dz, z0, z1)):
+                if abs(d) < 1e-9:
+                    if o < lo or o > hi:
+                        ok = False; break
+                else:
+                    ta, tb = (lo - o) / d, (hi - o) / d
+                    if ta > tb: ta, tb = tb, ta
+                    t0 = max(t0, ta); t1 = min(t1, tb)
+                    if t0 > t1:
+                        ok = False; break
+            if ok and t0 > 0.02 and t0 < tmin_all:
+                tmin_all = t0
+        return tmin_all
+
+    def _auto_camera(self, dt):
+        """Automatic third-person framing: swing behind the run direction, lead into turns,
+        tilt to show landings on jumps, ease back behind Miyoyazu when idle."""
+        p = self.player
+        if self.cam_manual_t > 0:
+            self.cam_manual_t = max(0.0, self.cam_manual_t - dt)
+            return
+        sp = math.hypot(p.vx, p.vy)
+        if p.grinding and p.rail:
+            (a, b) = p.rail
+            hx, hy, sp = b[0] - a[0], b[1] - a[1], 8.0
+        else:
+            hx, hy = p.vx, p.vy
+        if sp > 1.2:
+            self.cam_idle_t = 0.0
+            want = math.degrees(math.atan2(-hx, hy))
+            diff = _ang_wrap(want - self.cam_yaw)
+            # do not whip around when backing toward the camera; swing harder into sideways turns
+            if abs(diff) > 150:
+                rate = 0.0
+            else:
+                side = abs(math.sin(math.radians(diff)))
+                rate = (0.9 + 1.6 * side) * min(1.0, sp / 9.5)
+                if p.dash_t > 0:
+                    rate *= 1.6
+                if not p.on_ground:
+                    rate *= 0.55  # steadier in the air so jumps stay readable
+            self.cam_yaw = _ang_wrap(self.cam_yaw + diff * min(1.0, rate * dt))
+        else:
+            # idle: after a beat, drift back behind where Miyoyazu faces
+            self.cam_idle_t += dt
+            if self.cam_idle_t > 0.9:
+                diff = _ang_wrap(p.facing - self.cam_yaw)
+                if abs(diff) < 160:
+                    self.cam_yaw = _ang_wrap(self.cam_yaw + diff * min(1.0, 1.2 * dt))
+        # auto pitch: neutral run, look down into falls / gaps, a little up on a rising jump
+        want_p = -16.0
+        if not p.on_ground and not p.grinding:
+            if p.vz < -2:
+                want_p = -16.0 - min(16.0, (-p.vz - 2) * 1.4)
+            elif p.vz > 4:
+                want_p = -11.0
+        if p.dash_t > 0:
+            want_p = -12.0
+        self.cam_pitch += (want_p - self.cam_pitch) * min(1.0, dt * 2.2)
+
     def _update_camera(self, dt):
-        """FIREOUT SHINE style third-person / over-shoulder follow."""
+        """FIREOUT SHINE style third-person / over-shoulder follow with AUTO CAMERA."""
         a = self.app
         p = self.player
+        if self.auto_cam:
+            self._auto_camera(dt)
         self.shake = max(0, self.shake - dt * 2)
         sh = (random.uniform(-1, 1) * self.shake * 0.2, random.uniform(-1, 1) * self.shake * 0.2)
         dist, hgt = 5.2, 2.15
         if self.meta["wonder"] == "giant":
             dist, hgt = 7.5, 3.2
+        sp = math.hypot(p.vx, p.vy)
+        # pull out a little with speed / dash, tighten when idle
+        dist += min(1.1, sp * 0.07) + (0.9 if p.dash_t > 0 else 0.0)
         r = math.radians(self.cam_yaw)
         fx, fy = -math.sin(r), math.cos(r)
         # slight over-shoulder offset to the right
         ox, oy = fy * 0.55, -fx * 0.55
-        tx = p.x - fx * dist + ox
-        ty = p.y - fy * dist + oy
-        tz = p.z + hgt + math.sin(math.radians(self.cam_pitch)) * dist * 0.15
-        if self.cam_pos is None:
-            self.cam_pos = [tx, ty, tz]
-        k = min(1, dt * 7)
+        # look-ahead: lead the frame along velocity so turns and jump arcs open up in front
+        lead_x, lead_y = p.vx * 0.22, p.vy * 0.22
+        ll = math.hypot(lead_x, lead_y)
+        if ll > 2.6:
+            lead_x *= 2.6 / ll; lead_y *= 2.6 / ll
+        kl = min(1.0, dt * 3.5)
+        self.cam_lead[0] += (lead_x - self.cam_lead[0]) * kl
+        self.cam_lead[1] += (lead_y - self.cam_lead[1]) * kl
+        # vertical framing: in the air, aim between Miyoyazu and the predicted landing
+        look_z = p.z + 1.15 * p.scale
+        if not p.on_ground and not p.grinding and p.vz < 0:
+            g = self._ground_below(p.x + p.vx * 0.45, p.y + p.vy * 0.45, p.z)
+            if g is not None:
+                look_z = max(g + 0.9, look_z - min(2.2, (p.z - g) * 0.45))
+        if self.cam_air_z is None:
+            self.cam_air_z = look_z
+        self.cam_air_z += (look_z - self.cam_air_z) * min(1.0, dt * 5)
+        piv_x, piv_y, piv_z = p.x + self.cam_lead[0] * 0.5, p.y + self.cam_lead[1] * 0.5, self.cam_air_z
+        pr = math.radians(self.cam_pitch)
+        tx = piv_x - fx * dist * math.cos(pr) * 1.0 + ox
+        ty = piv_y - fy * dist * math.cos(pr) * 1.0 + oy
+        tz = p.z + hgt + (-math.sin(pr) - 0.276) * dist * 0.55
+        # soft collision: pull in toward Miyoyazu when a wall/platform blocks the view
+        if self.auto_cam:
+            hx0, hy0, hz0 = p.x, p.y, p.z + 1.2 * p.scale
+            t = self._cam_ray_hit(hx0, hy0, hz0, tx, ty, tz)
+            if t < 1.0:
+                full = math.dist((hx0, hy0, hz0), (tx, ty, tz))
+                keep = max(1.3, full * t - 0.35) / max(1e-3, full)
+                tx = hx0 + (tx - hx0) * keep
+                ty = hy0 + (ty - hy0) * keep
+                tz = hz0 + (tz - hz0) * keep + (1.0 - keep) * 0.8  # lift a touch over the blocker
+        if self.cam_pos is None or math.dist(self.cam_pos, (tx, ty, tz)) > 12.0:
+            self.cam_pos = [tx, ty, tz]  # respawn / teleport: cut, don't swoop
+            self.cam_air_z = look_z; piv_z = look_z
+        # pull in fast when blocked, ease back out slowly
+        cur = math.dist((p.x, p.y), (self.cam_pos[0], self.cam_pos[1]))
+        nxt = math.dist((p.x, p.y), (tx, ty))
+        k = min(1, dt * (11 if nxt < cur - 0.2 else 6))
         self.cam_pos[0] += (tx - self.cam_pos[0]) * k
         self.cam_pos[1] += (ty - self.cam_pos[1]) * k
         self.cam_pos[2] += (tz - self.cam_pos[2]) * k
         cam = a.camera
         cam.set_pos(self.cam_pos[0] + sh[0], self.cam_pos[1] + sh[1], self.cam_pos[2])
-        look_z = p.z + 1.15 * p.scale
-        cam.look_at(p.x + fx * 2.2 + ox * 0.3, p.y + fy * 2.2 + oy * 0.3, look_z)
-        fov = 62 + (8 if p.dash_t > 0 else 0)
+        cam.look_at(piv_x + fx * 2.2 + self.cam_lead[0] * 0.6 + ox * 0.3,
+                    piv_y + fy * 2.2 + self.cam_lead[1] * 0.6 + oy * 0.3, piv_z)
+        fov = 62 + (8 if p.dash_t > 0 else 0) + min(3.0, sp * 0.2)
         a.camLens.set_fov(fov)
         # update shader campos
         a.world_root.set_shader_input("campos", cam.get_pos())
@@ -418,7 +543,7 @@ class Hud:
         self.bansub = OnscreenText(parent=self.root, text="", pos=(0, 0.16), scale=0.038,
                                    fg=ROSE, font=fp, shadow=(0.1, 0.05, 0.08, 0.75))
         # bottom hint
-        self.hint = OnscreenText(parent=self.root, text="WASD move  ·  Space jump  ·  Shift dash  ·  mouse look",
+        self.hint = OnscreenText(parent=self.root, text="WASD move  ·  Space jump  ·  Shift dash  ·  AUTO CAMERA (mouse to peek)  ·  C toggle",
                                  pos=(0, -0.92), scale=0.028, fg=(0.85, 0.7, 0.72, 0.7), font=fp)
 
     def destroy(self):

@@ -1,4 +1,4 @@
-#define MyVer "1.0.1"
+#define MyVer "1.0.2"
 [Setup]
 AppId={{DD54B7E7-3FF7-4CC2-8A96-B562E8341B00}
 AppName=MIYOYAZU DASH
@@ -7,7 +7,7 @@ AppVerName=MIYOYAZU DASH {#MyVer}
 AppPublisher=EX Inc./HYPERION DIGITAL
 AppPublisherURL=https://github.com/Teobokki/miyoyazu-dash
 AppCopyright=©2026 EX Inc./HYPERION DIGITAL ©2026
-VersionInfoVersion=1.0.1
+VersionInfoVersion=1.0.2
 VersionInfoCompany=EX Inc./HYPERION DIGITAL
 VersionInfoCopyright=©2026 EX Inc./HYPERION DIGITAL ©2026
 VersionInfoProductName=MIYOYAZU DASH
