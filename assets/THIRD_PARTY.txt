@@ -1,0 +1,13 @@
+COKA - CALL OF KIMS ARMY  ©2026 EX Inc./HYPERION DIGITAL ©2026
+All characters, units, weapons and events in this game are fictional.
+
+Third-party components
+- Panda3D game engine - Modified BSD License - https://www.panda3d.org
+- NumPy - BSD 3-Clause License - https://numpy.org
+- Python runtime - PSF License
+- Exo 2 font (ui_font.ttf, ui_plain.ttf) - SIL Open Font License 1.1
+- Voices generated offline with Piper TTS (MIT License) using the en_GB VCTK medium voice model,
+  trained on the CSTR VCTK Corpus - Creative Commons Attribution 4.0 (CC BY 4.0),
+  University of Edinburgh, Centre for Speech Technology Research.
+- Sound effects: generated in-house (EX Inc.).
+- Textures, models, map and artwork: procedural / made by EX Inc.

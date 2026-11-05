@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "release_url": "https://github.com/Teobokki/miyoyazu-dash/releases/tag/v1.0.0",
+  "url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-Setup-1.0.0.exe",
+  "installer_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-Setup-1.0.0.exe",
+  "full_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-1.0.0-Windows-x64.zip",
+  "portable_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-Portable.exe",
+  "sha256": "023a2858c95bccb5d42774161b7e621596ed3332379453381879c66964801a60",
+  "zip_sha256": "53373e27a0898c8319e91d6e274e96e83ebfb5ea00f3820a337d57f32de6b49d",
+  "portable_sha256": "ffeee0131a54b668bee6f543969d8d417615e50e96710dcf630ea70ada5016be",
+  "released": "2026-11-05",
+  "notes": "MIYOYAZU DASH v1.0.0: 60-stage 3D dash platformer starring Miyoyazu. Six worlds with a real challenge ramp, coin collecting, double-jump and dash, stage twists (TIME VEIL / GIANT STEP / LIGHT FALL / SKY FLIP / RUSH WIND), romantic rose/gold UI. Per-user installer, no admin."
+}

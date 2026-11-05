@@ -1,0 +1,10 @@
+build/
+build_onefile/
+dist/
+dist_onefile/
+__pycache__/
+*.log
+shots/
+shots_*/
+.venv/
+*.pyc
