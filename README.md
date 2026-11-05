@@ -15,6 +15,9 @@ Ten stages per world with a real challenge ramp: early stages teach run / jump /
 ## Controls
 WASD move (**A** left, **D** right), Space jump / double-jump, Shift dash, mouse look, Esc pause.
 
+## Audio
+Retro energizing beds (menu + stage loops) and punchy 90s-style blips — square/pulse/noise, not cutesy.
+
 ## Graphics
 Third-person / over-shoulder camera, filmic colour grade and grain, RTX / EX HD modes. No bloom.
 

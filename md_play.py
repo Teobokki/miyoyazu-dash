@@ -330,6 +330,8 @@ class Session:
             return
         self.clear = True
         self.app.sfx("goal")
+        try: self.app.play_music("clear")
+        except Exception: pass
         # rank by time + coins
         t = self.time
         ratio = self.coins / max(1, self.coins_total)

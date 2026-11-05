@@ -7,7 +7,7 @@ BINS = [x for x in collect_dynamic_libs('panda3d') if not any(k in os.path.basen
 DATAS = collect_data_files('panda3d', includes=['etc/*'])
 ASSETS = [(f, 'assets') for f in ('assets/menu_bg.jpg', 'assets/poster.jpg', 'assets/icon.ico', 'assets/icon.png',
                                   'assets/ui_font.ttf', 'assets/ui_plain.ttf', 'assets/THIRD_PARTY.txt')]
-ASSETS += [('assets/sfx', 'assets/sfx')]
+ASSETS += [('assets/sfx', 'assets/sfx'), ('assets/music', 'assets/music')]
 HIDDEN = ['panda3d.core', 'panda3d.direct', 'direct.showbase.ShowBase', 'direct.gui.DirectGui', 'direct.filter.FilterManager',
           'md_gfx', 'md_world', 'md_play', 'fs_geom', 'numpy']
 EXCL = ['matplotlib', 'scipy', 'pandas', 'IPython', 'pytest', 'tkinter', 'PIL', 'cv2', 'wx', 'PyQt5', 'imageio_ffmpeg', 'onnxruntime']

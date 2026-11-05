@@ -1,8 +1,8 @@
-"""MIYOYAZU DASH  v1.0.0
+"""MIYOYAZU DASH  v1.0.1
 3D platformer: run, jump, collect coins, clear ~60 stages as Miyoyazu.
 ©2026 EX Inc./HYPERION DIGITAL ©2026"""
 import os, sys, json, math, random, time, threading, traceback
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 HERE = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 def A(*p):
     from panda3d.core import Filename
@@ -186,10 +186,45 @@ class App(ShowBase):
                 self.sounds[k] = [self.loader.load_sfx(A("sfx", k + ".wav")) for _ in range(3)]
             except Exception as e:
                 log("sfx %s: %r" % (k, e)); self.sounds[k] = []
+        self.music = {}; self.music_cur = None
+        for k in ("menu", "stage", "clear"):
+            try:
+                m = self.loader.load_music(A("music", k + ".wav"))
+                m.set_loop(k != "clear"); m.set_volume(0.55)
+                self.music[k] = m
+            except Exception as e:
+                log("music %s: %r" % (k, e))
 
     def set_volume(self):
         try: self.sfxManagerList[0].set_volume(self.settings.get("vol", 0.8))
         except Exception: pass
+        try:
+            v = float(self.settings.get("vol", 0.8)) * 0.55
+            for m in self.music.values(): m.set_volume(v)
+        except Exception: pass
+
+    def play_music(self, k):
+        """Retro stage/menu loops — square/pulse 90s vibe, not cutesy."""
+        if os.environ.get("MD_NOAUDIO"): return
+        m = self.music.get(k)
+        if not m: return
+        cur = self.music_cur
+        try:
+            if cur is m and m.status() == 1: return
+        except Exception: pass
+        try:
+            if cur: cur.stop()
+        except Exception: pass
+        try:
+            m.set_time(0); m.play(); self.music_cur = m
+        except Exception as e:
+            log("play_music %s: %r" % (k, e))
+
+    def stop_music(self):
+        try:
+            if self.music_cur: self.music_cur.stop()
+        except Exception: pass
+        self.music_cur = None
 
     def sfx(self, k, vol=1.0, rate=1.0):
         pool = self.sounds.get(k) or []
@@ -311,6 +346,7 @@ class App(ShowBase):
         self.paused = False
         if self.session:
             self.session.destroy(); self.session = None
+        self.play_music("menu")
         ui = self.new_ui(poster=True, dim=0.38)
         ar = self.getAspectRatio()
         # modern clean right column over the 3D-style cover
@@ -423,6 +459,7 @@ class App(ShowBase):
         self.paused = False
         if self.session:
             self.session.destroy()
+        self.play_music("stage")
         meta = W.stage_meta(sid)
         self.session = P.Session(self, sid, lives=3)
         self.session.world.root.reparent_to(self.world_root)
@@ -454,17 +491,17 @@ class App(ShowBase):
         # next stage or select
         nxt = sid + 1
         if nxt <= 60 and (sid % 10) != 0:
-            self.start_stage(nxt)
+            self.play_music("stage"); self.start_stage(nxt)
         else:
             if self.session: self.session.destroy(); self.session = None
-            self.stage_select((sid - 1) // 10)
+            self.play_music("menu"); self.stage_select((sid - 1) // 10)
         return None
 
     def on_stage_fail(self):
         if self.session:
             sid = self.session.meta["id"]
             self.session.destroy(); self.session = None
-            self.stage_select((sid - 1) // 10)
+            self.play_music("menu"); self.stage_select((sid - 1) // 10)
 
     # ---------- autotest / screenshots
     def autotest_start(self, task):

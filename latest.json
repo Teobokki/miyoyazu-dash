@@ -1,13 +1,13 @@
 {
-  "version": "1.0.0",
-  "release_url": "https://github.com/Teobokki/miyoyazu-dash/releases/tag/v1.0.0",
-  "url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-Setup-1.0.0.exe",
-  "installer_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-Setup-1.0.0.exe",
-  "full_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-1.0.0-Windows-x64.zip",
-  "portable_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.0/MIYOYAZU-DASH-Portable.exe",
-  "sha256": "023a2858c95bccb5d42774161b7e621596ed3332379453381879c66964801a60",
-  "zip_sha256": "53373e27a0898c8319e91d6e274e96e83ebfb5ea00f3820a337d57f32de6b49d",
-  "portable_sha256": "ffeee0131a54b668bee6f543969d8d417615e50e96710dcf630ea70ada5016be",
+  "version": "1.0.1",
+  "release_url": "https://github.com/Teobokki/miyoyazu-dash/releases/tag/v1.0.1",
+  "url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-Setup-1.0.1.exe",
+  "installer_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-Setup-1.0.1.exe",
+  "full_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-1.0.1-Windows-x64.zip",
+  "portable_url": "https://github.com/Teobokki/miyoyazu-dash/releases/download/v1.0.1/MIYOYAZU-DASH-Portable.exe",
+  "sha256": "1a696b4aa461c80ec0b75ab0628f1c60e3695759dca5ddaa6a833bb40b2d4118",
+  "zip_sha256": "ee3f80e829f4374d68dd9e290007a397e39a632640135f1abaabaa3e381eff33",
+  "portable_sha256": "06ec06c12afb9ae03e26328965cc03b333c2fc31d54771344a48ba9ecaeb965f",
   "released": "2026-11-05",
-  "notes": "MIYOYAZU DASH v1.0.0: 60-stage 3D dash platformer starring Miyoyazu. Six worlds with a real challenge ramp, coin collecting, double-jump and dash, stage twists (TIME VEIL / GIANT STEP / LIGHT FALL / SKY FLIP / RUSH WIND), romantic rose/gold UI. Per-user installer, no admin."
+  "notes": "Retro energizing menu/stage music and punchy 90s-style SFX (chiptune-adjacent, not cutesy). 60 stages, rose/gold UI, per-user installer."
 }
